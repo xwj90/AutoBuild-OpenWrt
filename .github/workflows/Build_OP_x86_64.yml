@@ -14,15 +14,9 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
-    - name: Check Disk Space
-      run: df -h
-
-    - name: Remove Docker Images
-      run: docker system prune -af
-      
     - name: Checkout
       uses: actions/checkout@master
 
@@ -49,7 +43,6 @@ jobs:
       env: 
         REPO_URL: https://github.com/coolsnowwolf/lede
         REPO_BRANCH: master
-        ACTIONS_STEP_DEBUG: false
       run: |
         git clone --depth 1 $REPO_URL -b $REPO_BRANCH openwrt
         cd openwrt
@@ -89,18 +82,12 @@ jobs:
         find dl -size -1024c -exec rm -f {} \;
 
     - name: Build firmware
-      env:
-        nproc : 8
-        ACTIONS_STEP_DEBUG: false
       working-directory: ./openwrt
       run: |
         echo -e "$(nproc) thread build."
         make -j$(nproc) V=s
 
     - name : Upload artifact
-      env:
-          nproc : 8
-          ACTIONS_STEP_DEBUG: false
       uses: actions/upload-artifact@master
       with:
         name: OpenWrt
